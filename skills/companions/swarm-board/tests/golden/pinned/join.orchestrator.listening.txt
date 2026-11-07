@@ -1,3 +1,0 @@
-exit 1
---- stderr
-swarm: "orchestrator" is not a seat

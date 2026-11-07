@@ -1,3 +1,0 @@
-exit 1
---- stderr
-swarm: merge-lock: refused: merge-lock is a worker's verb, and a seat holds no files; your verbs are in --help

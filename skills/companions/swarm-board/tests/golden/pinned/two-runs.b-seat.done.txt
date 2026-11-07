@@ -1,3 +1,0 @@
-exit 0
-done ideas: 1/1 done; the orchestrator is told every member is done
-you owe nothing now: end your turn with your report, without end; the orchestrator resumes you by message with the next task
