@@ -1,2 +1,0 @@
-exit 0
-merged <sha>: lock released
