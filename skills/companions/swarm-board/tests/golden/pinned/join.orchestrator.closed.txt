@@ -1,3 +1,0 @@
-exit 1
---- stderr
-swarm: run 1 is closed

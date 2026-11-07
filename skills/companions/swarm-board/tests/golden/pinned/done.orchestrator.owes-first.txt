@@ -1,3 +1,0 @@
-exit 1
---- stderr
-swarm: done: the orchestrator opens phases; a member runs done
