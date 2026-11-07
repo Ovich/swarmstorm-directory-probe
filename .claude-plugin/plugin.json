@@ -29,19 +29,5 @@
     "claude-code",
     "codex",
     "cursor"
-  ],
-  "skills": [
-    "./skills/project",
-    "./skills/architecture",
-    "./skills/ui",
-    "./skills/plan",
-    "./skills/execute",
-    "./skills/verify",
-    "./skills/workbench",
-    "./skills/review",
-    "./skills/companions",
-    "./skills/help",
-    "./skills/alignment",
-    "./skills/guides"
   ]
 }
