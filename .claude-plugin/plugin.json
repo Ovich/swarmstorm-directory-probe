@@ -6,6 +6,5 @@
     "name": "Stefan Teofanovic"
   },
   "homepage": "https://github.com/Ovich/swarmstorm-directory-probe",
-  "license": "MIT",
-  "icon": "./.claude-plugin/icon.png"
+  "license": "MIT"
 }
