@@ -1,2 +1,0 @@
-exit 0
-run 1  task  g  T  phase fix: w1 only  0/1 done  repo

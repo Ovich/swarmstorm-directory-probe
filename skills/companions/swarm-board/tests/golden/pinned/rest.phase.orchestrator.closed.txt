@@ -1,3 +1,0 @@
-exit 1
---- stderr
-swarm: member g/orchestrator has ended
