@@ -1,0 +1,72 @@
+// The member's situation, read from the board once per verb (board-rework D1): everything the answer rules decide on.
+// The rules (rules.ts) are pure functions over it; nothing else reads the board for an answer line.
+import type { Participant } from "../../board/board.ts";
+import { profileOf } from "../../board/kinds.ts";
+import type { ConnectedBoard } from "../../client/remote.ts";
+
+export type Listening = "foreground" | "background" | "orchestrator";
+
+export type Situation = {
+  /** this CLI as the member calls it, home included, as one command prefix */
+  cli: string;
+  /** the member's name as a shell word */
+  as: string;
+  run: number;
+  seat: string;
+  ended: boolean;
+  /** a background listener of the member's is running (the link's report, D4) */
+  listenerRunning: boolean;
+  /** how the member listens: a seat in the foreground, a worker and the orchestrator in the background */
+  listens: Listening;
+  /** a run whose members read the phase's whole thread before their part */
+  wholeThread: boolean;
+  /** the run is gone from the open runs */
+  closed: boolean;
+  pause: { text: string; person: boolean } | null;
+  /** board-split V-36 (D71): the member's own step in this pause, given by its pack's answer rules; absent: the core's */
+  pauseStep?: string | null;
+  /** the run's current phase */
+  phase: { name: string; text: string } | null;
+  /** the phase the member owes its done, null when none */
+  owed: { name: string; text: string; word: string } | null;
+  /** this verb showed the member its phase, and it was the first time in that phase; null when the verb shows none */
+  phaseFirst: boolean | null;
+  /** simple-states: a member (never the orchestrator) owing no phase, no open task, and holding nothing of its pack's (the merge lock) */
+  owesNothing: boolean;
+  /** board-fixes V1-3: the seq of the task posted to the member and still open, null when none */
+  openTask?: number | null;
+  /** messages waking the member (a mention, an agreement about a path it holds, an urgent post) not yet delivered */
+  unread?: number;
+};
+
+/** Reads the member's situation. `show`: the verb shows the phase to the member (wait, join), which the board
+ *  records, so a later answer in the same phase is told it was shown. */
+export async function readSituation(board: ConnectedBoard, me: Participant, opts: { cli: string; word: (w: string) => string; show?: boolean }): Promise<Situation> {
+  const runs = await board.runs();
+  const run = runs.find((r) => r.id === me.run);
+  const shown = opts.show ? await board.showPhase(me) : null;
+  const phase = shown ? shown.phase : await board.currentPhase(me.run);
+  const owed = run ? await board.owedPhase(me) : null;
+  const profile = profileOf(me.kind);
+  // fix2: a member its pack calls busy (holding the merge lock: merging) owes it, phase or none
+  const own = run && me.seat !== "orchestrator" && !me.ended ? (await board.roster(me.repo)).find((r) => r.name === me.name) : undefined;
+  return {
+    cli: opts.cli,
+    as: opts.word(me.name),
+    run: me.run,
+    seat: me.seat,
+    ended: !!me.ended,
+    listenerRunning: !!me.listening,
+    listens: me.seat === "orchestrator" ? "orchestrator" : profile.member === "worker" ? "background" : "foreground",
+    wholeThread: !!profile.wholeThread,
+    closed: !run,
+    pause: run && run.paused != null ? { text: run.paused, person: !!run.pausedPerson } : null,
+    phase: phase ? { name: phase.name, text: phase.text } : null,
+    owed: owed ? { name: owed.name, text: owed.text, word: opts.word(owed.name) } : null,
+    phaseFirst: shown ? shown.first : null,
+    // board-fixes#D5: an open task owes, phase or not
+    owesNothing: owed == null && own?.fact == null && own?.task == null,
+    openTask: own?.task ?? null,
+    unread: run && !me.ended ? await board.unreadMentions(me) : 0,
+  };
+}
